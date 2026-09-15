@@ -1,0 +1,3 @@
+# Sustituye pub-0000000000000000 por tu ID real de editor de AdSense
+# una vez tengas la cuenta aprobada (Configuración > Sitios > ads.txt en AdSense).
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

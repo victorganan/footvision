@@ -1,0 +1,14 @@
+[
+  { "id": "t01", "playerId": "p25", "fromTeamId": "psg", "toTeamId": "ars", "probability": 62, "feeEstimateM": 70, "updatedAt": "2026-09-14T10:00:00Z", "status": "rumor" },
+  { "id": "t02", "playerId": "p30", "fromTeamId": "mun", "toTeamId": "atm", "probability": 41, "feeEstimateM": 30, "updatedAt": "2026-09-13T09:00:00Z", "status": "rumor" },
+  { "id": "t03", "playerId": "p09", "fromTeamId": "ath", "toTeamId": "bay", "probability": 55, "feeEstimateM": 80, "updatedAt": "2026-09-12T18:00:00Z", "status": "rumor" },
+  { "id": "t04", "playerId": "p12", "fromTeamId": "mci", "toTeamId": "atm", "probability": 100, "feeEstimateM": 75, "updatedAt": "2024-08-01T00:00:00Z", "status": "official" },
+  { "id": "t05", "playerId": "p29", "fromTeamId": "bay", "toTeamId": "mun", "probability": 100, "feeEstimateM": 136, "updatedAt": "2025-07-01T00:00:00Z", "status": "official" },
+  { "id": "t06", "playerId": "p15", "fromTeamId": "psg", "toTeamId": "ars", "probability": 100, "feeEstimateM": 65, "updatedAt": "2025-08-01T00:00:00Z", "status": "official" },
+  { "id": "t07", "playerId": "p26", "fromTeamId": "rma", "toTeamId": "rma", "probability": 0, "feeEstimateM": null, "updatedAt": "2026-09-01T00:00:00Z", "status": "free-agent" },
+  { "id": "t08", "playerId": "p07", "fromTeamId": "fcb", "toTeamId": "fcb", "probability": 0, "feeEstimateM": null, "updatedAt": "2026-09-01T00:00:00Z", "status": "expiring" },
+  { "id": "t09", "playerId": "p04", "fromTeamId": "rma", "toTeamId": "rma", "probability": 0, "feeEstimateM": null, "updatedAt": "2026-09-01T00:00:00Z", "status": "expiring" },
+  { "id": "t10", "playerId": "p11", "fromTeamId": "atm", "toTeamId": "atm", "probability": 0, "feeEstimateM": null, "updatedAt": "2026-09-01T00:00:00Z", "status": "expiring" },
+  { "id": "t11", "playerId": "p21", "fromTeamId": "val", "toTeamId": "ath", "probability": 28, "feeEstimateM": 22, "updatedAt": "2026-09-10T12:00:00Z", "status": "rumor" },
+  { "id": "t12", "playerId": "p22", "fromTeamId": "val", "toTeamId": "mci", "probability": 35, "feeEstimateM": 45, "updatedAt": "2026-09-11T12:00:00Z", "status": "rumor" }
+]

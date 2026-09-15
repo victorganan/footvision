@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+build
+*.log
+.env
+.env.local
+data/footvision.db
+data/footvision.db-journal
+data/footvision.db-wal
+data/footvision.db-shm
+tsconfig.tsbuildinfo
+.DS_Store
