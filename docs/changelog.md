@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-15 — Plantilla, lesiones y fichajes reales (API-Football)
+
+- Conector real con API-Football (`src/lib/api-football.ts`), activable con `API_FOOTBALL_KEY`.
+- Los clubes "externos" (aparecen en partidos reales pero no en el dataset curado) muestran ahora plantilla completa, lesiones y últimos fichajes reales en su ficha de equipo. Los ~10 clubes curados mantienen su ficha simulada enriquecida sin cambios.
+- No cubre valor de mercado (ninguna API gratuita lo ofrece); documentado en README junto con el resto de limitaciones.
+- Cache en memoria por club (plantilla 12h, lesiones 6h, fichajes 24h) para respetar el límite de 100 peticiones/día del plan gratuito.
+
 ## 2026-09-15 — Partidos y clasificaciones reales (football-data.org)
 
 - Conector real con football-data.org (`src/lib/football-data-real.ts`) para Partidos y Clasificación, activable con `FOOTBALL_DATA_API_KEY`. Cubre LaLiga, Premier League, Bundesliga, Ligue 1 y Serie A (plan gratuito).

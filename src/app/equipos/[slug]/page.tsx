@@ -13,6 +13,7 @@ import { TeamBadge } from "@/components/TeamBadge";
 import { PlayerRow } from "@/components/PlayerRow";
 import { MatchCard } from "@/components/MatchCard";
 import { AdSlot } from "@/components/AdSlot";
+import { getRealInjuries, getRealSquad, getRealTeamTransfers } from "@/lib/api-football";
 
 export default async function TeamDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -24,6 +25,16 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
   const teamTransfers = getTransfers().filter((t) => t.fromTeamId === team.id || t.toTeamId === team.id);
   const injuries = squad.filter((p) => p.injury);
 
+  // Para clubes que no están en el dataset curado (llegan solo vía partidos
+  // reales), rellenamos plantilla/lesiones/fichajes con API-Football.
+  const [realSquad, realInjuries, realTransfers] = team.isExternal
+    ? await Promise.all([
+        getRealSquad(team.name).catch(() => null),
+        getRealInjuries(team.name).catch(() => null),
+        getRealTeamTransfers(team.name).catch(() => null),
+      ])
+    : [null, null, null];
+
   return (
     <div className="space-y-10">
       <div className="flex items-center gap-4 rounded-2xl border border-pitch-border bg-pitch-card p-6">
@@ -32,8 +43,11 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
           <h1 className="font-display text-2xl font-bold text-white">{team.name}</h1>
           {team.isExternal ? (
             <p className="text-sm text-slate-400">
-              {team.league} · calendario en vivo vía football-data.org. Plantilla, mercado y lesiones
-              no disponibles para este club en el dataset de demostración.
+              {team.league} · calendario en vivo vía football-data.org
+              {realSquad
+                ? " · plantilla y lesiones vía API-Football"
+                : " · plantilla y mercado no disponibles para este club en el dataset de demostración"}
+              . Sin valor de mercado (esa métrica solo la calcula Transfermarkt, no hay API gratuita).
             </p>
           ) : (
             <p className="text-sm text-slate-400">
@@ -47,12 +61,32 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
         <div className="space-y-8 lg:col-span-2">
           <section>
             <h2 className="mb-4 font-display text-lg font-bold text-white">Plantilla</h2>
-            <div className="grid gap-1 sm:grid-cols-2">
-              {squad.map((p) => (
-                <PlayerRow key={p.id} player={p} metric={{ label: "Valor", value: `${p.marketValueM}M€` }} />
-              ))}
-              {squad.length === 0 && <p className="text-sm text-slate-500">Sin jugadores registrados en el dataset.</p>}
-            </div>
+            {squad.length > 0 ? (
+              <div className="grid gap-1 sm:grid-cols-2">
+                {squad.map((p) => (
+                  <PlayerRow key={p.id} player={p} metric={{ label: "Valor", value: `${p.marketValueM}M€` }} />
+                ))}
+              </div>
+            ) : realSquad && realSquad.length > 0 ? (
+              <div className="grid gap-1 sm:grid-cols-2">
+                {realSquad.map((p) => (
+                  <div key={p.id} className="flex items-center gap-3 rounded-lg px-2 py-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.photo} alt={p.name} className="h-8 w-8 rounded-full bg-white/5 object-cover" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-white">{p.name}</p>
+                      <p className="truncate text-xs text-slate-500">
+                        {p.position}
+                        {p.age ? ` · ${p.age} años` : ""}
+                      </p>
+                    </div>
+                    {p.number && <span className="text-xs font-bold text-slate-500">#{p.number}</span>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">Sin jugadores registrados en el dataset.</p>
+            )}
           </section>
 
           <AdSlot className="h-20 w-full" />
@@ -68,9 +102,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
 
           <section>
             <h2 className="mb-4 font-display text-lg font-bold text-white">Mercado</h2>
-            {teamTransfers.length === 0 ? (
-              <p className="text-sm text-slate-500">Sin movimientos registrados.</p>
-            ) : (
+            {teamTransfers.length > 0 ? (
               <div className="space-y-2">
                 {teamTransfers.map((t) => {
                   const player = getPlayerById(t.playerId);
@@ -87,6 +119,19 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
                   );
                 })}
               </div>
+            ) : realTransfers && realTransfers.length > 0 ? (
+              <div className="space-y-2">
+                {realTransfers.map((t, i) => (
+                  <div key={i} className="rounded-lg border border-pitch-border bg-pitch-card p-3 text-sm">
+                    <span className="font-medium text-white">{t.playerName}</span>{" "}
+                    <span className="text-slate-500">
+                      {t.fromClub} → {t.toClub} · {t.type} · {new Date(t.date).toLocaleDateString("es-ES")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">Sin movimientos registrados.</p>
             )}
           </section>
         </div>
@@ -122,9 +167,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
 
           <section className="rounded-xl border border-pitch-border bg-pitch-card p-5">
             <h2 className="mb-3 font-display text-base font-bold text-white">Lesiones</h2>
-            {injuries.length === 0 ? (
-              <p className="text-sm text-slate-500">Sin lesionados registrados.</p>
-            ) : (
+            {injuries.length > 0 ? (
               <ul className="space-y-2 text-sm">
                 {injuries.map((p) => (
                   <li key={p.id}>
@@ -137,6 +180,17 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
                   </li>
                 ))}
               </ul>
+            ) : realInjuries && realInjuries.length > 0 ? (
+              <ul className="space-y-2 text-sm">
+                {realInjuries.map((inj, i) => (
+                  <li key={i}>
+                    <span className="font-medium text-white">{inj.playerName}</span>
+                    <p className="text-xs text-slate-500">{inj.reason}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-slate-500">Sin lesionados registrados.</p>
             )}
           </section>
         </div>

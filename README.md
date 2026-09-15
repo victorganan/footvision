@@ -50,6 +50,7 @@ producción:
 | `SESSION_SECRET` | Firma las cookies de sesión | Usa un valor de desarrollo (cámbialo en producción) |
 | `OPENAI_API_KEY` | Informes del Centro de Ojeo redactados por IA | Se usa un generador heurístico local (sin coste) |
 | `FOOTBALL_DATA_API_KEY` | Partidos y clasificaciones reales (ver abajo) | Se sirve el dataset simulado de `src/data` |
+| `API_FOOTBALL_KEY` | Plantilla/lesiones/fichajes reales de clubes no curados (ver abajo) | Esas fichas se quedan sin plantilla, como hoy |
 | `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | Activar los espacios de Google AdSense | Se muestran placeholders sin anuncios reales |
 
 ## Datos reales de partidos (football-data.org)
@@ -70,6 +71,27 @@ la API los da) y **Clasificación** pasan a ser reales para:
 - Límite de 10 peticiones/minuto: la app cachea las respuestas (partidos ~3 min, clasificaciones ~10 min) y, si la API falla por cualquier motivo, cae automáticamente al dataset simulado sin romper la página.
 
 Si `FOOTBALL_DATA_API_KEY` no está definida, todo sigue funcionando exactamente igual que con el dataset 100% simulado.
+
+## Plantilla, lesiones y fichajes reales (API-Football)
+
+Con `API_FOOTBALL_KEY` configurada (clave gratuita de
+[api-football.com](https://www.api-football.com) / dashboard.api-football.com,
+**distinta** de la de football-data.org de arriba), los clubes que aparecen
+en partidos reales pero no están en nuestro dataset curado (los ~10 clubes
+con ficha rica: Real Madrid, Barcelona, Man City...) obtienen automáticamente:
+
+- Plantilla completa (foto, nombre, posición, dorsal, edad).
+- Lesiones actuales del club.
+- Últimos fichajes registrados del club.
+
+Los ~10 clubes ya curados **no se tocan** — mantienen su ficha simulada más
+rica (valor de mercado, historial propio, etc.) para no perder detalle.
+
+**Limitaciones**:
+
+- **No hay valor de mercado**: ninguna API gratuita lo ofrece, solo Transfermarkt lo calcula y no da acceso programático. Si en el futuro se quiere ese dato en las fichas reales, la única vía gratuita es un scraper no oficial de Transfermarkt (riesgo legal/ToS a valorar aparte, ver conversación de diseño).
+- Plan gratuito limitado a 100 peticiones/día; la app cachea agresivamente (plantilla 12h, lesiones 6h, fichajes 24h) para no agotarlo.
+- Si la API falla, esa sección simplemente no aparece (sin romper la página), igual que si la clave no estuviera configurada.
 
 ## Despliegue en ARSYS
 
