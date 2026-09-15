@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-15 — Partidos y clasificaciones reales (football-data.org)
+
+- Conector real con football-data.org (`src/lib/football-data-real.ts`) para Partidos y Clasificación, activable con `FOOTBALL_DATA_API_KEY`. Cubre LaLiga, Premier League, Bundesliga, Ligue 1 y Serie A (plan gratuito).
+- Cache en memoria para respetar el límite de 10 peticiones/minuto del plan gratuito, y fallback automático al dataset simulado si la API falla.
+- Aviso visible en Home y Resultados (`RealDataBanner`) indicando qué ligas tienen datos reales y qué secciones siguen siendo un dataset de demostración (jugadores, mercado, valor de mercado, Centro de Ojeo).
+- Equipos que no están en nuestro dataset simulado obtienen una ficha básica con calendario real pero sin plantilla, en vez de romper la página.
+- `getMatches`, `getMatchById`, `getMatchesByTeam` y `getStandings` pasan a ser funciones asíncronas en toda la app (páginas y rutas API actualizadas).
+
 ## 2026-09-15 — MVP inicial
 
 Primera versión funcional de FootVision según el master prompt (sección 7,

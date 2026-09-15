@@ -35,13 +35,13 @@ export function getPredictionForMatch(userId: string, matchId: string): Predicti
     .get(userId, matchId) as PredictionRecord | undefined;
 }
 
-export function placePrediction(
+export async function placePrediction(
   userId: string,
   matchId: string,
   pick: PredictionPick,
   stake: number
-): PredictionRecord {
-  const match = getMatchById(matchId);
+): Promise<PredictionRecord> {
+  const match = await getMatchById(matchId);
   if (!match) throw new Error("Partido no encontrado");
   if (match.status !== "scheduled") throw new Error("Ya no se puede predecir este partido");
 
@@ -81,7 +81,7 @@ function currentWinStreak(userId: string): number {
 }
 
 /** Resuelve todas las predicciones pendientes cuyos partidos ya han finalizado. */
-export function resolvePendingPredictions(userId: string): { resolved: number; coinsWon: number } {
+export async function resolvePendingPredictions(userId: string): Promise<{ resolved: number; coinsWon: number }> {
   const db = getDb();
   const pending = db
     .prepare(`SELECT * FROM predictions WHERE user_id = ? AND status = 'pending'`)
@@ -91,7 +91,7 @@ export function resolvePendingPredictions(userId: string): { resolved: number; c
   let coinsWon = 0;
 
   for (const prediction of pending) {
-    const match = getMatchById(prediction.match_id);
+    const match = await getMatchById(prediction.match_id);
     if (!match || match.status !== "finished" || match.homeScore === null || match.awayScore === null) {
       continue;
     }

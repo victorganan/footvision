@@ -23,7 +23,7 @@ export function MatchCard({ match }: { match: Match }) {
         {match.status === "live" ? (
           <span className="flex items-center gap-1 font-semibold text-accent">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
-            EN VIVO {match.minute}&apos;
+            EN VIVO{match.minute ? ` ${match.minute}'` : ""}
           </span>
         ) : match.status === "finished" ? (
           <span className="text-slate-500">Finalizado</span>

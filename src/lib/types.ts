@@ -9,10 +9,13 @@ export interface Team {
   league: string;
   country: string;
   crestColor: string;
+  crestUrl?: string;
   founded: number;
   stadium: string;
   coach: string;
   marketValueM: number;
+  /** true si el equipo procede de una API real y no tiene plantilla/mercado simulados. */
+  isExternal?: boolean;
 }
 
 export interface Player {

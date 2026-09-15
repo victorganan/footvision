@@ -7,7 +7,7 @@ export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
-  const resolution = resolvePendingPredictions(user.id);
+  const resolution = await resolvePendingPredictions(user.id);
   const predictions = getUserPredictions(user.id);
   return NextResponse.json({ predictions, resolution });
 }
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Datos invalidos" }, { status: 400 });
 
   try {
-    const prediction = placePrediction(user.id, parsed.data.matchId, parsed.data.pick, parsed.data.stake);
+    const prediction = await placePrediction(user.id, parsed.data.matchId, parsed.data.pick, parsed.data.stake);
     return NextResponse.json({ prediction });
   } catch (err) {
     if (err instanceof InsufficientCoinsError) {

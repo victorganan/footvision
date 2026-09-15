@@ -25,9 +25,9 @@ export default async function PrediccionesPage() {
     );
   }
 
-  resolvePendingPredictions(user.id);
+  await resolvePendingPredictions(user.id);
   const stats = getUserStats(user.id);
-  const upcoming = getUpcomingMatches();
+  const upcoming = await getUpcomingMatches();
 
   return (
     <div className="space-y-8">

@@ -1,17 +1,22 @@
 import { getFinishedMatches, getLiveMatches, getUpcomingMatches } from "@/lib/football-data";
 import { MatchCard } from "@/components/MatchCard";
 import { SectionHeader } from "@/components/SectionHeader";
+import { RealDataBanner } from "@/components/RealDataBanner";
 
 export const metadata = { title: "Resultados y partidos — FootVision" };
 
-export default function PartidosPage() {
-  const live = getLiveMatches();
-  const upcoming = getUpcomingMatches();
-  const finished = getFinishedMatches();
+export default async function PartidosPage() {
+  const [live, upcoming, finished] = await Promise.all([
+    getLiveMatches(),
+    getUpcomingMatches(),
+    getFinishedMatches(),
+  ]);
 
   return (
     <div className="space-y-10">
       <h1 className="font-display text-2xl font-bold text-white">Resultados</h1>
+
+      <RealDataBanner />
 
       {live.length > 0 && (
         <section>

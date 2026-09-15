@@ -15,7 +15,7 @@ const EVENT_ICON: Record<string, string> = {
 
 export default async function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const match = getMatchById(id);
+  const match = await getMatchById(id);
   if (!match) notFound();
 
   const home = getTeamById(match.homeTeamId);
@@ -53,7 +53,9 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                   {match.homeScore} - {match.awayScore}
                 </p>
                 {match.status === "live" ? (
-                  <p className="mt-1 text-sm font-semibold text-accent">EN VIVO · {match.minute}&apos;</p>
+                  <p className="mt-1 text-sm font-semibold text-accent">
+                    EN VIVO{match.minute ? ` · ${match.minute}'` : ""}
+                  </p>
                 ) : (
                   <p className="mt-1 text-sm text-slate-500">Finalizado</p>
                 )}

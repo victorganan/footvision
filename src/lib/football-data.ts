@@ -4,6 +4,17 @@ import matchesJson from "@/data/matches.json";
 import transfersJson from "@/data/transfers.json";
 import newsJson from "@/data/news.json";
 import type { Match, NewsItem, Player, Team, TransferRumor } from "./types";
+import {
+  getExternalTeamById,
+  getExternalTeamBySlug,
+  getRealMatchById,
+  getRealMatches,
+  getRealStandings,
+  isRealDataEnabled,
+  SUPPORTED_LEAGUES as REAL_DATA_LEAGUES,
+} from "./football-data-real";
+
+export { isRealDataEnabled, REAL_DATA_LEAGUES };
 
 /**
  * Capa de acceso a datos deportivos.
@@ -42,8 +53,9 @@ class MockProvider implements FootballDataProvider {
 }
 
 function getProvider(): FootballDataProvider {
-  // Punto de extensión: cuando exista un provider real (football-data.org,
-  // API-Football...) se selecciona aquí según FOOTBALL_DATA_PROVIDER.
+  // Jugadores, equipos, mercado y noticias siempre vienen de este dataset
+  // simulado. Los partidos y clasificaciones sí pueden ser reales: ver
+  // football-data-real.ts y FOOTBALL_DATA_API_KEY.
   return new MockProvider();
 }
 
@@ -54,11 +66,11 @@ export function getTeams(): Team[] {
 }
 
 export function getTeamBySlug(slug: string): Team | undefined {
-  return provider.getTeams().find((t) => t.slug === slug);
+  return provider.getTeams().find((t) => t.slug === slug) ?? getExternalTeamBySlug(slug);
 }
 
 export function getTeamById(id: string): Team | undefined {
-  return provider.getTeams().find((t) => t.id === id);
+  return provider.getTeams().find((t) => t.id === id) ?? getExternalTeamById(id);
 }
 
 export function getPlayers(): Player[] {
@@ -77,34 +89,60 @@ export function getPlayersByTeam(teamId: string): Player[] {
   return provider.getPlayers().filter((p) => p.teamId === teamId);
 }
 
-export function getMatches(): Match[] {
-  return [...provider.getMatches()].sort(
-    (a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
-  );
+function sortByKickoffAsc(matches: Match[]): Match[] {
+  return [...matches].sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime());
 }
 
-export function getMatchById(id: string): Match | undefined {
+/**
+ * Partidos: si hay FOOTBALL_DATA_API_KEY configurada, se sirven partidos
+ * reales de football-data.org (LaLiga, Premier League, Bundesliga, Ligue 1,
+ * Serie A). Si la API falla por cualquier motivo (límite de peticiones, red,
+ * mantenimiento...) se cae automáticamente al dataset simulado, sin romper
+ * la página.
+ */
+export async function getMatches(): Promise<Match[]> {
+  if (isRealDataEnabled()) {
+    try {
+      const real = await getRealMatches();
+      if (real.length > 0) return sortByKickoffAsc(real);
+    } catch (err) {
+      console.error("[football-data.org] fallo al obtener partidos, usando dataset simulado:", err);
+    }
+  }
+  return sortByKickoffAsc(provider.getMatches());
+}
+
+export async function getMatchById(id: string): Promise<Match | undefined> {
+  if (id.startsWith("fd-m-")) {
+    try {
+      const real = await getRealMatchById(id);
+      if (real) return real;
+    } catch (err) {
+      console.error("[football-data.org] fallo al obtener el partido, buscando en cache:", err);
+    }
+    return (await getRealMatches().catch(() => [] as Match[])).find((m) => m.id === id);
+  }
   return provider.getMatches().find((m) => m.id === id);
 }
 
-export function getLiveMatches(): Match[] {
-  return getMatches().filter((m) => m.status === "live");
+export async function getLiveMatches(): Promise<Match[]> {
+  return (await getMatches()).filter((m) => m.status === "live");
 }
 
-export function getUpcomingMatches(limit?: number): Match[] {
-  const upcoming = getMatches().filter((m) => m.status === "scheduled");
+export async function getUpcomingMatches(limit?: number): Promise<Match[]> {
+  const upcoming = (await getMatches()).filter((m) => m.status === "scheduled");
   return limit ? upcoming.slice(0, limit) : upcoming;
 }
 
-export function getFinishedMatches(limit?: number): Match[] {
-  const finished = getMatches()
+export async function getFinishedMatches(limit?: number): Promise<Match[]> {
+  const finished = (await getMatches())
     .filter((m) => m.status === "finished")
     .sort((a, b) => new Date(b.kickoff).getTime() - new Date(a.kickoff).getTime());
   return limit ? finished.slice(0, limit) : finished;
 }
 
-export function getMatchesByTeam(teamId: string): Match[] {
-  return getMatches().filter((m) => m.homeTeamId === teamId || m.awayTeamId === teamId);
+export async function getMatchesByTeam(teamId: string): Promise<Match[]> {
+  return (await getMatches()).filter((m) => m.homeTeamId === teamId || m.awayTeamId === teamId);
 }
 
 export function getTransfers(): TransferRumor[] {
@@ -148,9 +186,18 @@ export function getTopAssisters(limit = 10): Player[] {
   return [...getPlayers()].sort((a, b) => b.stats.assists - a.stats.assists).slice(0, limit);
 }
 
-export function getStandings(league: string) {
-  const teams = getTeams().filter((t) => t.league === league);
-  const matches = getMatches().filter((m) => m.league === league && m.status === "finished");
+export async function getStandings(league: string) {
+  if (isRealDataEnabled()) {
+    try {
+      const real = await getRealStandings(league);
+      if (real && real.length > 0) return real;
+    } catch (err) {
+      console.error("[football-data.org] fallo al obtener la clasificación, usando cálculo local:", err);
+    }
+  }
+
+  const teams = provider.getTeams().filter((t) => t.league === league);
+  const matches = provider.getMatches().filter((m) => m.league === league && m.status === "finished");
 
   const table = new Map<
     string,

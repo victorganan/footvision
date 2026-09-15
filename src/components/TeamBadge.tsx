@@ -1,6 +1,21 @@
 import type { Team } from "@/lib/types";
 
 export function TeamBadge({ team, size = 28 }: { team: Team; size?: number }) {
+  if (team.crestUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={team.crestUrl}
+        alt={team.name}
+        title={team.name}
+        width={size}
+        height={size}
+        className="shrink-0 rounded-full bg-white/5 object-contain"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
   return (
     <span
       className="grid shrink-0 place-items-center rounded-full border border-white/10 font-bold text-pitch"

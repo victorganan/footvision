@@ -12,11 +12,14 @@ import { MatchCard } from "@/components/MatchCard";
 import { SectionHeader } from "@/components/SectionHeader";
 import { AdSlot } from "@/components/AdSlot";
 import { TeamBadge } from "@/components/TeamBadge";
+import { RealDataBanner } from "@/components/RealDataBanner";
 
-export default function HomePage() {
-  const live = getLiveMatches();
-  const upcoming = getUpcomingMatches(4);
-  const finished = getFinishedMatches(4);
+export default async function HomePage() {
+  const [live, upcoming, finished] = await Promise.all([
+    getLiveMatches(),
+    getUpcomingMatches(4),
+    getFinishedMatches(4),
+  ]);
   const news = getNews(5);
   const transfers = getOfficialTransfers();
 
@@ -42,6 +45,8 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      <RealDataBanner />
 
       {live.length > 0 && (
         <section>

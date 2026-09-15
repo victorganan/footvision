@@ -20,8 +20,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
   if (!team) notFound();
 
   const squad = getPlayersByTeam(team.id).sort((a, b) => a.shirtNumber - b.shirtNumber);
-  const matches = getMatchesByTeam(team.id);
-  const standings = getStandings(team.league);
+  const [matches, standings] = await Promise.all([getMatchesByTeam(team.id), getStandings(team.league)]);
   const teamTransfers = getTransfers().filter((t) => t.fromTeamId === team.id || t.toTeamId === team.id);
   const injuries = squad.filter((p) => p.injury);
 
@@ -31,9 +30,16 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
         <TeamBadge team={team} size={64} />
         <div>
           <h1 className="font-display text-2xl font-bold text-white">{team.name}</h1>
-          <p className="text-sm text-slate-400">
-            {team.league} · {team.stadium} · Entrenador: {team.coach} · Valor de plantilla: {team.marketValueM}M€
-          </p>
+          {team.isExternal ? (
+            <p className="text-sm text-slate-400">
+              {team.league} · calendario en vivo vía football-data.org. Plantilla, mercado y lesiones
+              no disponibles para este club en el dataset de demostración.
+            </p>
+          ) : (
+            <p className="text-sm text-slate-400">
+              {team.league} · {team.stadium} · Entrenador: {team.coach} · Valor de plantilla: {team.marketValueM}M€
+            </p>
+          )}
         </div>
       </div>
 
