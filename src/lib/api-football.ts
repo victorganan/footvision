@@ -16,6 +16,12 @@ export function isSquadDataEnabled(): boolean {
   return Boolean(process.env.API_FOOTBALL_KEY);
 }
 
+/** Llamada ligera de diagnóstico: confirma que la clave funciona y da la cuota usada. */
+export async function getAccountStatus(): Promise<unknown | null> {
+  if (!isSquadDataEnabled()) return null;
+  return fetchAF(`/status`);
+}
+
 interface CacheEntry<T> {
   value: T;
   expiresAt: number;

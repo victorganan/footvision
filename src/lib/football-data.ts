@@ -16,6 +16,17 @@ import {
 
 export { isRealDataEnabled, REAL_DATA_LEAGUES };
 
+/** True solo si hay clave Y la última llamada a football-data.org devolvió partidos reales. */
+export async function isUsingRealMatches(): Promise<boolean> {
+  if (!isRealDataEnabled()) return false;
+  try {
+    const real = await getRealMatches();
+    return real.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Capa de acceso a datos deportivos.
  *
